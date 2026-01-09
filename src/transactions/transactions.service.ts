@@ -15,27 +15,35 @@ export class TransactionsService {
   ){}
   
   async create(createTransactionDto: CreateTransactionDto) {
-    const transaction = new Transaction()
-    transaction.total = createTransactionDto.total
-    await this.transactionRepository.save(transaction)
 
-    for(const contents of createTransactionDto.contents) {
-      const product = await this.productRepository.findOneBy({id: contents.productId})
-      if (!product) {
-        throw new BadRequestException(`Producto con id ${contents.productId} no encontrado`)
+    await this.productRepository.manager.transaction(async (transactionEntityManager) => {
+      
+      const transaction = new Transaction()
+      transaction.total = createTransactionDto.total
+      await transactionEntityManager.save(transaction)
+  
+      for(const contents of createTransactionDto.contents) {
+        const product = await transactionEntityManager.findOneBy( Product, {id: contents.productId} )
+        if (!product) {
+          throw new BadRequestException(`Producto con id ${contents.productId} no encontrado`)
+        }
+        if (contents.quantity > product.inventory) {
+          throw new BadRequestException(`El artículo ${product.name} excede la cantidad disponible`)
+        }
+        product.inventory -= contents.quantity
+
+        const transactionContent = new TransactionContents()
+        transactionContent.price = contents.price
+        transactionContent.product = product
+        transactionContent.quantity = contents.quantity
+        transactionContent.transaction = transaction
+
+        await transactionEntityManager.save(transaction)
+        await transactionEntityManager.save(transactionContent)
       }
-      if (contents.quantity > product.inventory) {
-        throw new BadRequestException(`El artículo ${product.name} excede la cantidad disponible`)
-      }
-      product.inventory -= contents.quantity
-      await this.productRepository.save(product)
-      const txContent = this.transactionContentRepository.create({ ...contents })
-      txContent.transaction = transaction
-      txContent.product = product
-      await this.transactionContentRepository.save(txContent)
-    }
+    })
     
-    return "Venta almacenada con Éxito"
+    return "Venta almacenada con Éxito";
   }
 
   findAll() {
