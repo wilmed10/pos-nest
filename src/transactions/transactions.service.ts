@@ -3,7 +3,6 @@ import { endOfDay, isValid, parseISO, startOfDay } from 'date-fns'
 import { InjectRepository } from '@nestjs/typeorm';
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
-import { UpdateTransactionDto } from './dto/update-transaction.dto';
 import { Transaction, TransactionContents } from './entities/transaction.entity';
 import { Product } from 'src/products/entities/product.entity';
 
@@ -11,7 +10,7 @@ import { Product } from 'src/products/entities/product.entity';
 export class TransactionsService {
   constructor(
     @InjectRepository(Transaction) private readonly transactionRepository: Repository<Transaction>,
-    @InjectRepository(TransactionContents) private readonly transactionContentRepository: Repository<TransactionContents>,
+    @InjectRepository(TransactionContents) private readonly transactionContentsRepository: Repository<TransactionContents>,
     @InjectRepository(Product) private readonly productRepository: Repository<Product>
   ){}
   
@@ -81,7 +80,21 @@ export class TransactionsService {
     return transaction;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} transaction`;
+  async remove(id: number) {
+    const transaction = await this.findOne(id)
+    for(const contents of transaction.contents) {
+      const product = await this.productRepository.findOneBy({id: contents.product.id})
+      if (product) {
+        product.inventory += contents.quantity
+        await this.productRepository.save(product)
+      }
+
+      const transactionContents = await this.transactionContentsRepository.findOneBy({id: contents.id})
+      if (transactionContents) {
+        await this.transactionContentsRepository.remove(transactionContents)
+      }
+    }
+    await this.transactionRepository.remove(transaction)
+    return {message: 'Venta Eliminada'}
   }
 }

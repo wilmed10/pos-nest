@@ -30,6 +30,6 @@ export class TransactionContents {
     @ManyToOne(() => Product, (product) => product.id, {eager: true, cascade: true})
     product: Product
 
-    @ManyToOne(() => Transaction, (trasnsaction => trasnsaction.contents), {cascade: true})
+    @ManyToOne(() => Transaction, (transaction => transaction.contents), {cascade: true})
     transaction: Transaction
 }

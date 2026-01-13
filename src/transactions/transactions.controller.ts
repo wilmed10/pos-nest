@@ -1,6 +1,7 @@
 import { Controller, Get, Post, Body, Param, Delete, Query } from '@nestjs/common';
 import { TransactionsService } from './transactions.service';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
+import { IdValidationPipe } from 'src/common/pipes/id-validation/id-validation.pipe';
 
 @Controller('transactions')
 export class TransactionsController {
@@ -22,7 +23,7 @@ export class TransactionsController {
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
+  remove(@Param('id', IdValidationPipe) id: string) {
     return this.transactionsService.remove(+id);
   }
 }
