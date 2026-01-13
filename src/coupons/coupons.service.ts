@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateCouponDto } from './dto/create-coupon.dto';
 import { UpdateCouponDto } from './dto/update-coupon.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -16,11 +16,15 @@ export class CouponsService {
   }
 
   findAll() {
-    return `This action returns all coupons`;
+    return this.couponRepository.find()
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} coupon`;
+  async findOne(id: number) {
+    const coupon = await this.couponRepository.findOneBy({id})
+    if(!coupon) {
+      throw new NotFoundException(`El cupón con el ID: ${id} no fue encontrado`)
+    }
+    return coupon;
   }
 
   update(id: number, updateCouponDto: UpdateCouponDto) {
