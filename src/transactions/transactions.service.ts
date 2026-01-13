@@ -1,7 +1,7 @@
 import { Between, FindManyOptions, Repository } from 'typeorm';
 import { endOfDay, isValid, parseISO, startOfDay } from 'date-fns'
 import { InjectRepository } from '@nestjs/typeorm';
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { UpdateTransactionDto } from './dto/update-transaction.dto';
 import { Transaction, TransactionContents } from './entities/transaction.entity';
@@ -66,12 +66,19 @@ export class TransactionsService {
     return this.transactionRepository.find(options)
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} transaction`;
-  }
-
-  update(id: number, updateTransactionDto: UpdateTransactionDto) {
-    return `This action updates a #${id} transaction`;
+  async findOne(id: number) {
+    const transaction = await this.transactionRepository.findOne({
+      where: {
+        id,
+      },
+      relations: {
+        contents:true
+      }
+    })
+    if(!transaction){
+      throw new NotFoundException('Transacción no encontrada')
+    }
+    return transaction;
   }
 
   remove(id: number) {
