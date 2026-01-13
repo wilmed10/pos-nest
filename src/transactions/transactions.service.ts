@@ -1,4 +1,4 @@
-import { Repository } from 'typeorm';
+import { FindManyOptions, Repository } from 'typeorm';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
@@ -46,7 +46,12 @@ export class TransactionsService {
   }
 
   findAll() {
-    return `This action returns all transactions`;
+    const options : FindManyOptions<Transaction> = {
+      relations: {
+        contents: true
+      }
+    }
+    return this.transactionRepository.find(options)
   }
 
   findOne(id: number) {
