@@ -4,8 +4,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { Transaction, TransactionContents } from './entities/transaction.entity';
-import { Product } from 'src/products/entities/product.entity';
-import { CouponsService } from 'src/coupons/coupons.service';
+import { Product } from '../products/entities/product.entity';
+import { CouponsService } from '../coupons/coupons.service';
 
 @Injectable()
 export class TransactionsService {
