@@ -27,11 +27,15 @@ export class CouponsService {
     return coupon;
   }
 
-  update(id: number, updateCouponDto: UpdateCouponDto) {
-    return `This action updates a #${id} coupon`;
+  async update(id: number, updateCouponDto: UpdateCouponDto) {
+    const coupon = await this.findOne(id)
+    Object.assign(coupon, updateCouponDto)
+    return await this.couponRepository.save(coupon);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} coupon`;
+  async remove(id: number) {
+    const coupon = await this.findOne(id)
+    await this.couponRepository.remove(coupon)
+    return {message: 'Cupon eliminado'}
   }
 }
