@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
+import { DataSource, Repository } from "typeorm";
 import { Category } from "../categories/entities/category.entity";
 import { Product } from "../products/entities/product.entity";
 import { categories } from "./data/categories";
@@ -10,8 +10,16 @@ import { products } from "./data/products";
 export class SeederService {
     constructor(
         @InjectRepository(Category) private readonly categoryRepository : Repository<Category>,
-        @InjectRepository(Product) private readonly productRepository : Repository<Product>
+        @InjectRepository(Product) private readonly productRepository : Repository<Product>,
+        private dataSource: DataSource
     ) {}
+
+    async onModuleInit() {
+        const connection = this.dataSource
+        await connection.dropDatabase()
+        await connection.synchronize()
+    }
+
     async seed() {
         await this.categoryRepository.save(categories);
         for (const seedProduct of products) {
