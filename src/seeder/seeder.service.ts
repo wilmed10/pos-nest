@@ -9,32 +9,46 @@ import { products } from "./data/products";
 @Injectable()
 export class SeederService {
     constructor(
-        @InjectRepository(Category) private readonly categoryRepository : Repository<Category>,
-        @InjectRepository(Product) private readonly productRepository : Repository<Product>,
-        private dataSource: DataSource
+        @InjectRepository(Category)
+        private readonly categoryRepository: Repository<Category>,
+
+        @InjectRepository(Product)
+        private readonly productRepository: Repository<Product>,
+
+        private readonly dataSource: DataSource
     ) {}
 
-    async onModuleInit() {
-        const connection = this.dataSource
-        await connection.dropDatabase()
-        await connection.synchronize()
-    }
-
     async seed() {
-        await this.categoryRepository.save(categories);
-        for (const seedProduct of products) {
-            const category = await this.categoryRepository.findOneBy({id: seedProduct.categoryId})
-            if (!category) {
-                throw new Error(`Category with id ${seedProduct.categoryId} not found`)
-            }
-            const product = new Product()
-            product.name = seedProduct.name
-            product.image = seedProduct.image
-            product.price = seedProduct.price
-            product.inventory = seedProduct.inventory
-            product.category = category
+        await this.dataSource.query(`
+            TRUNCATE TABLE
+            transaction_contents,
+            product,
+            category
+            RESTART IDENTITY
+            CASCADE
+        `)
 
-            await this.productRepository.save(product)
+        const savedCategories =
+            await this.categoryRepository.save(categories)
+
+        for (const seedProduct of products) {
+            const category = savedCategories.find(
+                c => c.id === seedProduct.categoryId
+            )
+
+            if (!category) {
+                throw new Error(
+                    `Category with id ${seedProduct.categoryId} not found`
+                )
+            }
+
+            await this.productRepository.save({
+                name: seedProduct.name,
+                image: seedProduct.image,
+                price: seedProduct.price,
+                inventory: seedProduct.inventory,
+                category
+            })
         }
     }
 }
