@@ -54,7 +54,7 @@ export class TransactionsService {
       }
     })
     
-    return "Venta almacenada con Éxito";
+    return {message: "Venta almacenada correctamente"}
   }
 
   findAll(transactionDate?: string) {
