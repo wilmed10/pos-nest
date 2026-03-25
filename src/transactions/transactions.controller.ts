@@ -13,8 +13,11 @@ export class TransactionsController {
   }
 
   @Get()
-  findAll( @Query('transactionDate') transactionDate: string ) {
-    return this.transactionsService.findAll(transactionDate);
+  findAll(
+    @Query('transactionDate') transactionDate: string,
+    @Query('offset') offset: string
+  ) {
+    return this.transactionsService.findAll(transactionDate, +offset || 0);
   }
 
   @Get(':id')

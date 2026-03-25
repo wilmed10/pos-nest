@@ -1,5 +1,5 @@
 import { Between, FindManyOptions, Repository } from 'typeorm';
-import { endOfDay, isValid, parseISO, startOfDay } from 'date-fns'
+import { addMinutes, endOfDay, isValid, parseISO, startOfDay } from 'date-fns'
 import { InjectRepository } from '@nestjs/typeorm';
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
@@ -57,7 +57,7 @@ export class TransactionsService {
     return {message: "Venta almacenada correctamente"}
   }
 
-  findAll(transactionDate?: string) {
+  findAll(transactionDate?: string, offset: number = 0) {
     const options : FindManyOptions<Transaction> = {
       relations: {
         contents: true
@@ -68,8 +68,8 @@ export class TransactionsService {
       if(!isValid(date)) {
         throw new BadRequestException('Fecha no válida')
       }
-      const start = startOfDay(date)
-      const end = endOfDay(date)
+      const start = addMinutes(startOfDay(date), offset)
+      const end = addMinutes(endOfDay(date), offset)
       options.where = {
         transactionDate: Between(start, end)
       }
