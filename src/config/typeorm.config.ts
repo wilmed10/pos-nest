@@ -12,5 +12,5 @@ export const typeOrmConfig = (configService: ConfigService) : TypeOrmModuleOptio
     ssl: true,
     logging: true,
     entities: [join(__dirname + '/../**/*.entity.{js,ts}')],
-    synchronize: true
+    synchronize: configService.get('NODE_ENV') !== 'production'
 })

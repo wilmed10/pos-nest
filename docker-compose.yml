@@ -13,6 +13,9 @@ services:
       - "traefik.http.routers.postnest.rule=Host(`apipos.wilsonmedina.online`)"
       - "traefik.http.routers.postnest.tls.certresolver=letsencrypt"
       - "traefik.http.services.postnest.loadbalancer.server.port=3001"
+      - "traefik.http.middlewares.postnest-rl.ratelimit.average=100"
+      - "traefik.http.middlewares.postnest-rl.ratelimit.burst=50"
+      - "traefik.http.routers.postnest.middlewares=postnest-rl"
 
 networks:
   proxy:
