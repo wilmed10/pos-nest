@@ -1,0 +1,19 @@
+services:
+  postnest:
+    image: postnest:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file: .env
+    networks:
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.postnest.rule=Host(`apipos.wilsonmedina.online`)"
+      - "traefik.http.routers.postnest.tls.certresolver=letsencrypt"
+      - "traefik.http.services.postnest.loadbalancer.server.port=3001"
+
+networks:
+  proxy:
+    external: true
